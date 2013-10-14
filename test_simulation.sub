@@ -1,0 +1,11 @@
+#!/bin/bash
+#$ -N matlab-test
+#$ -o matlabTest.log
+#$ -j y
+#$ -cwd
+#$ -t 1-30
+#$ -M lorenzo.sarti@epfl.ch
+
+
+matlab -nodisplay -nodesktop -nojvm -r "test_simulation($SGE_TASK_ID, 5, 10),exit" > outputFile
+
