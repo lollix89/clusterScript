@@ -155,12 +155,10 @@ for currentSimulation= 1: nSimulations
             mkdir('./results');
         end
         
-        FileName= strcat('./results/simulationResultJob_', num2str(jobID), '_', nRobots, '.mat');
+        FileName= strcat('./results/simulationResultJob_', num2str(jobID), '_', num2str(currentSimulation), '_', num2str(nRobots), '.mat');
         save( FileName, 'currentRMSE', 'jobID', 'nRobots');
         
     end
-    
-    %RMSEValuesAllScenarios=[RMSEValuesAllScenarios mean(currentRMSE,2)];
 end
 
 end
