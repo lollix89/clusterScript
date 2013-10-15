@@ -10,9 +10,9 @@ NRobots=0;
 
 for i=1:length(fileList)
     L=load(strcat('./results/', fileList(i).name));
-    NRobots= size(L.RMSEValuesAllScenarios, 2);
+    NRobots= L.nRobots;
         
-    for j=1:size(L.RMSEValuesAllScenarios, 2)        %#robots in the simulation
+    for j=1:NRobots
         
         if mod(L.jobID, 3)== 1
             shortRange(j,:,end+1)= L.RMSEValuesAllScenarios(:,j);
