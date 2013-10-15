@@ -3,56 +3,59 @@ function test_simulation(jobID, nMaxRobots, nSimulations)
 % compute a path for the mobile robot in function of the kriging error
 close all;
 
-% a path of nWPpath waypoints is recomputed each time the robot reaches
-% nWayPoints waypoints
-nWayPoints=5;% number of waypoints to reach before recomputing the path
-nWPpath=10;% number of waypoints in the path
 
-% choose randomly a random field
-fieldNum= randi([1 100]);
-
-if mod(jobID, 3)== 1
-    field=load(['./RandomFields/RandField_LR_No' num2str(200+fieldNum) '.csv']);
-elseif mod(jobID,3)== 2
-    field=load(['./RandomFields/RandField_IR_No' num2str(100+fieldNum) '.csv']);
-else
-    field=load(['./RandomFields/RandField_SR_No' num2str(fieldNum) '.csv']);
-end
-
-%we want a field of 200x200 m. (not 199x199)
-field(:,end+1)=field(:,end);
-field(end+1,:)=field(end,:);
-[Ly,Lx]=size(field);
-
-%position of the stations (static sensors)
-stations=[];
-stations(:,1)=[24 34 14 94 134 74 94 166 186 174];
-stations(:,2)=[166 94 22 14 86 66 174 174 106 34];
-
-%grid used to save the measures
-h = 1;
-x = 0:h:Lx-1;
-y = 0:h:Ly-1;
-lx=length(x);
-ly=length(y);
-
-%interpolation points (points where the kriging error is computed)
-delta=5;
-x_=0:delta:Lx-1;
-y_=0:delta:Ly-1;
-
-%allowable waypoints position
-ph = 20;
-px = 0:ph:Lx-1;
-py = 0:ph:Ly-1;
-lpx=length(px);
-lpy=length(py);
-
-RMSEValuesAllScenarios= [];
-
-for nRobots= 1: nMaxRobots
-    allRMSESameNumberOfRobots= [];
-    for currentSimulation= 1: nSimulations
+for currentSimulation= 1: nSimulations
+    
+    for nRobots= 1: nMaxRobots
+        
+        
+        % a path of nWPpath waypoints is recomputed each time the robot reaches
+        % nWayPoints waypoints
+        nWayPoints=5;% number of waypoints to reach before recomputing the path
+        nWPpath=10;% number of waypoints in the path
+        
+        % choose randomly a random field
+        fieldNum= randi([1 100]);
+        
+        if mod(jobID, 3)== 1
+            field=load(['./RandomFields/RandField_LR_No' num2str(200+fieldNum) '.csv']);
+        elseif mod(jobID,3)== 2
+            field=load(['./RandomFields/RandField_IR_No' num2str(100+fieldNum) '.csv']);
+        else
+            field=load(['./RandomFields/RandField_SR_No' num2str(fieldNum) '.csv']);
+        end
+        
+        %we want a field of 200x200 m. (not 199x199)
+        field(:,end+1)=field(:,end);
+        field(end+1,:)=field(end,:);
+        [Ly,Lx]=size(field);
+        
+        %position of the stations (static sensors)
+        stations=[];
+        stations(:,1)=[24 34 14 94 134 74 94 166 186 174];
+        stations(:,2)=[166 94 22 14 86 66 174 174 106 34];
+        
+        %grid used to save the measures
+        h = 1;
+        x = 0:h:Lx-1;
+        y = 0:h:Ly-1;
+        lx=length(x);
+        ly=length(y);
+        
+        %interpolation points (points where the kriging error is computed)
+        delta=5;
+        x_=0:delta:Lx-1;
+        y_=0:delta:Ly-1;
+        
+        %allowable waypoints position
+        ph = 20;
+        px = 0:ph:Lx-1;
+        py = 0:ph:Ly-1;
+        lpx=length(px);
+        lpy=length(py);
+        
+        
+        currentRMSE= [];
         %vector containing the sampling points (nan at position non-sampled)
         sVec=ones(lx*ly,1)*nan;
         kVec=1:lx*ly;%indices
@@ -146,16 +149,19 @@ for nRobots= 1: nMaxRobots
         dist=sum(distances(:,1:end-1), 1);
         
         RMSE_=interp1(dist,RMSE,0:50:2900);
-        allRMSESameNumberOfRobots=[allRMSESameNumberOfRobots  RMSE_'];
-    end
+        currentRMSE=  RMSE_';
+        %for every simulation and for every number fo quadrotors
+        if ~exist('./results', 'dir')
+            mkdir('./results');
+        end
         
-    RMSEValuesAllScenarios=[RMSEValuesAllScenarios mean(allRMSESameNumberOfRobots,2)];
+        FileName= strcat('./results/simulationResultJob_', num2str(jobID), '_', nRobots, '.mat');
+        save( FileName, 'currentRMSE', 'jobID', 'nRobots');
+        
+    end
+    
+    %RMSEValuesAllScenarios=[RMSEValuesAllScenarios mean(currentRMSE,2)];
 end
-if ~exist('./results', 'dir')
-    mkdir('./results');
-end
-FileName= strcat('./results/simulationResultJob_', num2str(jobID), '.mat');
-save( FileName, 'RMSEValuesAllScenarios', 'jobID');
 
 end
 
